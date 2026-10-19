@@ -34,7 +34,7 @@ const PuzzlePiece = ({ color, className, delay = 0, size = 64 }: { color: string
 const FAQS = [
   {
     question: "Como e quando recebo o acesso ao Guia do Autismo?",
-    answer: "O acesso é 100% digital e imediato! Assim que o seu pagamento for aprovado pela Hotmart, receberá automaticamente no seu e-mail o link para descarregar o e-book completo em PDF de alta qualidade. Poderá ler imediatamente no telemóvel, tablet ou computador."
+    answer: "O acesso é 100% digital e imediato! Assim que o seu pagamento for aprovado pela Hotmart, receberá automaticamente no seu e-mail o link seguro para aceder ao Guia Completo. Poderá ler imediatamente no telemóvel, tablet ou computador."
   },
   {
     question: "Quais são os métodos de pagamento aceites em Portugal?",
@@ -59,10 +59,18 @@ export default function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showMobileBar, setShowMobileBar] = useState(false);
 
-  // Monitora scroll para exibir barra fixa no mobile após passar do topo
+  // Monitora scroll para exibir barra fixa no mobile apenas quando a oferta não está visível na tela
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 450) {
+      const ofertaEl = document.getElementById("oferta");
+      if (!ofertaEl) {
+        setShowMobileBar(window.scrollY > 450);
+        return;
+      }
+      const rect = ofertaEl.getBoundingClientRect();
+      const isOfertaInView = rect.top < window.innerHeight && rect.bottom > 100;
+
+      if (window.scrollY > 450 && !isOfertaInView) {
         setShowMobileBar(true);
       } else {
         setShowMobileBar(false);
@@ -290,7 +298,7 @@ export default function App() {
               {/* Single High-Conversion Card */}
               <motion.div 
                 {...fadeIn}
-                className="bg-white border-2 border-brand-green p-8 md:p-10 rounded-[32px] shadow-2xl shadow-brand-green/10 relative overflow-hidden"
+                className="bg-white border-2 border-brand-green p-6 sm:p-8 md:p-10 rounded-[32px] shadow-2xl shadow-brand-green/10 relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 bg-brand-green text-white text-[9px] font-black uppercase tracking-widest px-5 py-1.5 rounded-bl-2xl">
                   -55% DE DESCONTO
@@ -299,7 +307,7 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-6">
                   <div>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mb-1">Acesso Digital Imediato</p>
-                    <h3 className="text-2xl font-black text-slate-900">E-BOOK COMPLETO (PDF)</h3>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">GUIA COMPLETO 2026</h3>
                   </div>
                   <div className="text-left sm:text-right">
                     <span className="text-slate-400 line-through text-lg font-bold block">de 37€</span>
@@ -368,25 +376,32 @@ export default function App() {
                       });
                     }
                   }}
-                  className="w-full py-5 rounded-2xl bg-brand-green hover:bg-emerald-600 text-white font-black uppercase tracking-wider text-base md:text-lg shadow-xl shadow-brand-green/30 btn-premium flex items-center justify-center gap-2 group transition-all"
+                  className="w-full py-4 sm:py-5 px-4 rounded-2xl bg-brand-green hover:bg-emerald-600 active:scale-[0.98] text-white shadow-xl shadow-brand-green/30 btn-premium flex flex-col items-center justify-center gap-1 group transition-all text-center cursor-pointer"
                 >
-                  <span>Garantir Meu Acesso por 16€</span>
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="font-black uppercase tracking-wider text-base sm:text-lg leading-tight">
+                      GARANTIR GUIA COMPLETO
+                    </span>
+                    <ArrowRight size={20} className="shrink-0 group-hover:translate-x-1.5 transition-transform" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-emerald-100">
+                    Apenas 16€ • Pagamento Único
+                  </span>
                 </a>
 
                 {/* Métodos de Pagamento em Portugal */}
                 <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-2.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">
                     Métodos disponíveis em Portugal:
                   </span>
                   <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
-                      MB WAY
+                    <span className="px-3 py-1.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-black border border-slate-200 shadow-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span> MB WAY
                     </span>
-                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
-                      Multibanco
+                    <span className="px-3 py-1.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-black border border-slate-200 shadow-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span> Multibanco
                     </span>
-                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
+                    <span className="px-3 py-1.5 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-200">
                       Cartão de Crédito
                     </span>
                   </div>
@@ -514,7 +529,7 @@ export default function App() {
           >
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
-                Guia 2026 • Hotmart
+                Guia Completo 2026
               </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xl font-black text-brand-green">16€</span>
@@ -533,9 +548,9 @@ export default function App() {
                   });
                 }
               }}
-              className="bg-brand-green hover:bg-emerald-600 text-white font-black text-sm px-5 py-3 rounded-xl uppercase tracking-wider shadow-lg shadow-brand-green/25 active:scale-95 transition-all"
+              className="bg-brand-green hover:bg-emerald-600 text-white font-black text-sm px-5 py-2.5 rounded-xl uppercase tracking-wider shadow-lg shadow-brand-green/25 active:scale-95 transition-all"
             >
-              Garantir Acesso
+              Quero o Guia
             </a>
           </motion.div>
         )}
@@ -590,7 +605,7 @@ export default function App() {
               {activeModal === 'termos' && (
                 <div className="space-y-4 text-slate-700 text-sm leading-relaxed">
                   <h3 className="text-2xl font-black text-slate-900 mb-4">Termos de Uso</h3>
-                  <p><strong>1. Objeto:</strong> O Guia do Autismo 2026 é um material digital (e-book) educacional destinado a pais, cuidadores e educadores com orientações sobre o espectro do autismo.</p>
+                  <p><strong>1. Objeto:</strong> O Guia do Autismo 2026 é um material educacional completo em formato digital destinado a pais, cuidadores e educadores com orientações sobre o espectro do autismo.</p>
                   <p><strong>2. Entrega e Acesso:</strong> O produto é 100% digital e disponibilizado imediatamente por e-mail após a confirmação do pagamento através da plataforma segura Hotmart.</p>
                   <p><strong>3. Garantia:</strong> Oferecemos garantia incondicional de 7 dias. Caso não fique satisfeito, poderá solicitar reembolso integral diretamente pela plataforma Hotmart.</p>
                   <p><strong>4. Isenção Médica:</strong> As informações contidas no guia possuem caráter informativo e pedagógico, não substituindo o diagnóstico, consulta ou acompanhamento de médicos e terapeutas habilitados.</p>
