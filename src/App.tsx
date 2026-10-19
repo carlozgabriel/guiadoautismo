@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Puzzle, 
@@ -13,7 +13,11 @@ import {
   Star,
   Users,
   Info,
-  X
+  X,
+  ChevronDown,
+  HelpCircle,
+  Sparkles,
+  CreditCard
 } from "lucide-react";
 
 const PuzzlePiece = ({ color, className, delay = 0, size = 64 }: { color: string, className: string, delay?: number, size?: number }) => (
@@ -27,8 +31,71 @@ const PuzzlePiece = ({ color, className, delay = 0, size = 64 }: { color: string
   </motion.div>
 );
 
+const FAQS = [
+  {
+    question: "Como e quando recebo o acesso ao Guia do Autismo?",
+    answer: "O acesso é 100% digital e imediato! Assim que o seu pagamento for aprovado pela Hotmart, receberá automaticamente no seu e-mail o link para descarregar o e-book completo em PDF de alta qualidade. Poderá ler imediatamente no telemóvel, tablet ou computador."
+  },
+  {
+    question: "Quais são os métodos de pagamento aceites em Portugal?",
+    answer: "Pode pagar com toda a segurança através de MB WAY, Referência Multibanco ou Cartão Bancário (Crédito/Débito). O pagamento é processado diretamente pelo ambiente seguro da Hotmart com encriptação bancária de 256 bits."
+  },
+  {
+    question: "O guia é adaptado à legislação e escolas de Portugal?",
+    answer: "Sim! Este é o grande diferencial deste material em relação a outros conteúdos genéricos da internet. O Guia do Autismo 2026 aborda especificamente os apoios da Segurança Social portuguesa, o funcionamento do SNS e os protocolos de Educação Inclusiva (Decreto-Lei 54/2018) nas escolas de Portugal."
+  },
+  {
+    question: "E se o guia não me ajudar? Tem garantia?",
+    answer: "Sim, tem garantia incondicional de 7 dias! Pode aceder ao livro, ler todos os capítulos e colocar as estratégias em prática. Se sentir que não agregou valor ao seu dia a dia, basta pedir reembolso na Hotmart e recebe 100% do seu dinheiro de volta, sem complicações."
+  },
+  {
+    question: "O pagamento é mensal ou taxa única?",
+    answer: "É um pagamento único de apenas 16€. Não existem assinaturas, mensalidades nem custos adicionais escondidos. O acesso ao material descarregado é seu para sempre."
+  }
+];
+
 export default function App() {
   const [activeModal, setActiveModal] = useState<'termos' | 'privacidade' | 'contacto' | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showMobileBar, setShowMobileBar] = useState(false);
+
+  // Monitora scroll para exibir barra fixa no mobile após passar do topo
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 450) {
+        setShowMobileBar(true);
+      } else {
+        setShowMobileBar(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  /**
+   * Helper blindado para garantir que todos os parâmetros de UTMs,
+   * fbclid e src sejam passados ao checkout da Hotmart, mesmo que adblockers
+   * tentem barrar scripts externos.
+   */
+  const getHotmartCheckoutUrl = () => {
+    const baseUrl = "https://pay.hotmart.com/V96367646I?checkoutMode=10";
+    if (typeof window === "undefined") return baseUrl;
+    try {
+      const url = new URL(baseUrl);
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.forEach((val, key) => {
+        url.searchParams.set(key, val);
+      });
+      // Fallback para rastreamento de origem na Hotmart
+      if (!url.searchParams.has("src") && url.searchParams.has("utm_source")) {
+        url.searchParams.set("src", url.searchParams.get("utm_source") || "");
+      }
+      return url.toString();
+    } catch (e) {
+      return baseUrl;
+    }
+  };
+
   const fadeIn = {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
@@ -289,8 +356,8 @@ export default function App() {
 
                 {/* CTA Button */}
                 <a 
-                  href="https://pay.hotmart.com/V96367646I?checkoutMode=10" 
-                  target="_blank" 
+                  href={getHotmartCheckoutUrl()} 
+                  target="_self" 
                   rel="noopener noreferrer" 
                   onClick={() => {
                     if (typeof window !== 'undefined' && (window as any).fbq) {
@@ -306,6 +373,24 @@ export default function App() {
                   <span>Garantir Meu Acesso por 16€</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </a>
+
+                {/* Métodos de Pagamento em Portugal */}
+                <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-2.5">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Métodos disponíveis em Portugal:
+                  </span>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
+                      MB WAY
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
+                      Multibanco
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg text-xs font-black border border-slate-200">
+                      Cartão de Crédito
+                    </span>
+                  </div>
+                </div>
 
                 <p className="text-[11px] text-slate-400 text-center mt-3 font-medium">
                   🔒 Compra segura com encriptação SSL de 256 bits
@@ -351,6 +436,110 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 bg-slate-50 border-t border-slate-200/80">
+        <div className="max-w-4xl mx-auto px-6 md:px-12">
+          <motion.div {...fadeIn} className="text-center mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-brand-blue text-xs font-black uppercase tracking-widest border border-blue-100">
+              <HelpCircle size={14} /> Dúvidas Frequentes
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">
+              Perguntas <span className="text-brand-blue">Frequentes</span>
+            </h2>
+            <p className="text-slate-500 text-sm md:text-base max-w-xl mx-auto">
+              Tudo o que precisa de saber sobre o Guia do Autismo 2026 antes de garantir o seu acesso.
+            </p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {FAQS.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <motion.div
+                  key={index}
+                  {...fadeIn}
+                  transition={{ delay: index * 0.05 }}
+                  className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:border-brand-blue/30 transition-colors"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    className="w-full text-left p-6 flex items-center justify-between gap-4 font-bold text-slate-900 hover:text-brand-blue transition-colors cursor-pointer"
+                  >
+                    <span className="text-base md:text-lg">{faq.question}</span>
+                    <ChevronDown
+                      size={20}
+                      className={`text-slate-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-brand-blue" : ""}`}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 text-sm md:text-base text-slate-600 leading-relaxed border-t border-slate-100 pt-4">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Quick CTA inside FAQ */}
+          <div className="mt-12 text-center">
+            <a
+              href="#oferta"
+              className="inline-flex items-center gap-2 text-brand-blue font-black hover:underline text-sm md:text-base uppercase tracking-wider"
+            >
+              Quero aproveitar a oferta exclusiva de 16€ <ArrowRight size={16} />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Floating CTA bar on mobile */}
+      <AnimatePresence>
+        {showMobileBar && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-10px_25px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3"
+          >
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                Guia 2026 • Hotmart
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-brand-green">16€</span>
+                <span className="text-xs text-slate-400 line-through font-bold">37€</span>
+              </div>
+            </div>
+            <a
+              href={getHotmartCheckoutUrl()}
+              target="_self"
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).fbq) {
+                  (window as any).fbq('track', 'InitiateCheckout', {
+                    content_name: 'Guia do Autismo 2026 (Floating)',
+                    currency: 'EUR',
+                    value: 16.00
+                  });
+                }
+              }}
+              className="bg-brand-green hover:bg-emerald-600 text-white font-black text-sm px-5 py-3 rounded-xl uppercase tracking-wider shadow-lg shadow-brand-green/25 active:scale-95 transition-all"
+            >
+              Garantir Acesso
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="bg-slate-950 py-20 text-slate-400 text-sm">
